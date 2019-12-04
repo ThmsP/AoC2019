@@ -9,42 +9,6 @@ def read_input():
     return wires
 
 
-def get_min_max(wire):
-    """
-    UNUSED
-    """
-    i = 0
-    max = 0
-    min = 0
-    for ind in wire:
-        if 'U' in ind or 'R' in ind:
-            i += int(ind[1:])
-        elif 'D' in ind or 'L' in ind:
-            i -= int(ind[1:])
-        if i > max:
-            max = i
-        if i < min:
-            min = i
-    return min, max
-
-
-def sortw(wire):
-    """
-    UNUSED
-    """
-    updown = []
-    leftright = []
-    for i in wire:
-        # print i
-        if 'U' in i or 'D' in i:
-            # print 'add updown'
-            updown.append(i)
-        elif 'L' in i or 'R' in i:
-            # print 'add leftright'
-            leftright.append(i)
-    return updown, leftright
-
-
 def add_point(coord, U, D, R, L):
     """
     Return the point fonction of the increment
@@ -58,23 +22,23 @@ def get_all_point(wire):
     """
     Assemble all the point of trajectory in a set
     """
-    coord_w1 = [(0, 0)]
+    coord = [(0, 0)]
     for i in wire:
         incr = int(i[1:].replace('\n',''))
-        last_pt = coord_w1[-1]
+        last_pt = coord[-1]
         if 'R' in i:
             for j in range(1, incr+1):
-                coord_w1.append(add_point(last_pt, 0, 0, j, 0))
+                coord.append(add_point(last_pt, 0, 0, j, 0))
         elif 'L' in i:
             for j in range(1, incr+1):
-                coord_w1.append(add_point(last_pt, 0, 0, 0, j))
+                coord.append(add_point(last_pt, 0, 0, 0, j))
         elif 'U' in i:
             for j in range(1, incr+1):
-                coord_w1.append(add_point(last_pt, j, 0, 0, 0))
+                coord.append(add_point(last_pt, j, 0, 0, 0))
         elif 'D' in i:
             for j in range(1, incr+1):
-                coord_w1.append(add_point(last_pt, 0, j, 0, 0))
-    return set(coord_w1)
+                coord.append(add_point(last_pt, 0, j, 0, 0))
+    return coord
 
 def manhattan_dst(intersect):
     """
@@ -89,14 +53,26 @@ def manhattan_dst(intersect):
             mindst = dst
     return mindst
 
+def minmize_delay(wire1, wire2, intersect):
+    return wire1.index(intersect)+wire2.index(intersect)
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
 
     w1, w2 = read_input()
 
-    set_w1 = get_all_point(w1)
-    set_w2 = get_all_point(w2)
+    coord_w1 = get_all_point(w1)
+    coord_w2 = get_all_point(w2)
 
-    intersect = set_w1 & set_w2
+
+    intersect = set(coord_w1) & set(coord_w2)
+    print intersect
+    min_delay = []
+    for crois in intersect:
+        min_delay.append(minmize_delay(coord_w1, coord_w2, crois))
+    if 0 in min_delay:
+        min_delay.pop(min_delay.index(0))
+
+    print min(min_delay)
     print manhattan_dst(intersect)
