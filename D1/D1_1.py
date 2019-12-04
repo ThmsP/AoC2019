@@ -18,3 +18,9 @@ def fuel_req(mass):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+
+    fuel_mod = 0
+    with open('input.data','r') as f :
+      for m in f.readlines():
+        fuel_mod += fuel_req(int(m))
+    print fuel_mod
