@@ -19,40 +19,41 @@ def mul(sub, line):
 	line[sub[3]] = line[sub[1]] * line[sub[2]]
 	return line
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
-
+def reset_mem():
 	# Process input :
     with open('input.data','r') as f:
 		l = [int(s) for s in f.readline().split(',')]
 		# print l[:4]
+    return l
 
-	#1202 program state
-    l[1] = 12
-    l[2] = 2
-
-    wl = l[:]
-    for i in range(4,len(l),4):
+def compute_ad0(l):
+	wl = l[:]
+	for i in range(4,len(l),4):
 		sub = wl[i-4:i]
 		opcode = sub[0]
-		print '#######'
-		print wl
-		print sub
-		print opcode
 		if opcode == 99 : 
-			print 'opcode 99'
 			break
 		elif opcode == 1 :
-			print 'opcode 1'
 			wl = add(sub, wl)
 		elif opcode == 2 :
-			print 'opcode 2'
 			wl = mul(sub, wl)
 		else : 
-			print 'else'
 			break 
-		print wl
+	return wl[0]
 
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
 
-    print wl[0]
+    for noun in range(0,100):
+    	for verb in range(0,100):
+    		l = reset_mem()
+    		# print l
+			#1202 program state
+    		l[1] = noun
+    		l[2] = verb
+
+    		if compute_ad0(l) == 19690720:
+    			print 'noun :', noun
+    			print 'verb :', verb
+    			print '100*noun+verb :', 100*noun+verb
