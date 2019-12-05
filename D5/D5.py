@@ -1,6 +1,6 @@
 #D5
 import logging, sys
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 def reset_mem():
   # Process input :
@@ -46,28 +46,45 @@ def get_value(sub, line, p1, p2, p3):
   logging.debug('sub, %s', sub)
   logging.debug('get_value, p1, p2, p3 : %i, %i, %i', p1, p2, p3)
 
-  if p1 : 
-    v1 = sub[1]
-  else :
-    v1 = line[sub[1]]
-    logging.debug('get_value, sub[1], %i',sub[1])
-    logging.debug('get_value, line[sub[1]], %i',line[sub[1]])
-    logging.debug('get_value, v1, %i',v1)
-  if p2 :
-    v2 = sub[2]
-  else :
-    v2 = line[sub[2]]
-    logging.debug('get_value, sub[2], %i',sub[2])
-    logging.debug('get_value, line[sub[2]], %i',line[sub[2]])
-    logging.debug('get_value, v2, %i',v2)
-  # if p3 :
-  #   v3 = sub[3]
+  params = [p1, p2, p3]
+  values = []
+  i = 1
+  logging.debug('params[:len(sub), %s', params[:len(sub)])
+  for p in params[:len(sub)-1]:
+    logging.debug('p, %i', p)
+    logging.debug('i, %i', i)
+    if p:
+      values.append(sub[i])
+    else :
+      values.append(line[sub[i]])
+    i += 1
+
+  if len(values) < 3:
+    values += [0 for j in range(3-len(values))]
+  v1, v2, v3 = values
+
+  # if p1 : 
+  #   v1 = sub[1]
   # else :
-  #   v3 = line[sub[3]]
-  #   logging.debug('get_value, sub[3], %i',sub[3])
-  #   logging.debug('get_value, line[sub[3]], %i',line[sub[3]])
-  #   logging.debug('get_value, v3, %i',v3)
-  v3 = 0
+  #   v1 = line[sub[1]]
+  #   logging.debug('get_value, sub[1], %i',sub[1])
+  #   logging.debug('get_value, line[sub[1]], %i',line[sub[1]])
+  #   logging.debug('get_value, v1, %i',v1)
+  # if p2 :
+  #   v2 = sub[2]
+  # else :
+  #   v2 = line[sub[2]]
+  #   logging.debug('get_value, sub[2], %i',sub[2])
+  #   logging.debug('get_value, line[sub[2]], %i',line[sub[2]])
+  #   logging.debug('get_value, v2, %i',v2)
+  # # if p3 :
+  # #   v3 = sub[3]
+  # # else :
+  # #   v3 = line[sub[3]]
+  # #   logging.debug('get_value, sub[3], %i',sub[3])
+  # #   logging.debug('get_value, line[sub[3]], %i',line[sub[3]])
+  # #   logging.debug('get_value, v3, %i',v3)
+  # v3 = 0
   logging.debug('get_value, v1, v2, v3 : %i, %i, %i', v1, v2, v3)
   return v1, v2, v3
 
@@ -100,15 +117,20 @@ def linput(pos, line, p1, p2, p3):
   """
   opcode 3
   """
-  line[pos] = input('Input whatever\n')
+  if not test_input :
+    line[pos] = input('Input whatever\n')
+  else :
+    line[pos] = test_input
   return line, 0
 
-def loutput(pos, line, p1, p2, p3):
+def loutput(sub, line, p1, p2, p3):
   """
   opcode 4
   """
   v1, v2, v3 = get_value(sub, line, p1, p2, p3)
   logging.info('Diagnostic code : %i', v1)
+  global return_code
+  return_code = v1
   return line, 0
 
 def jumpiftrue(sub, line, p1, p2, p3):
@@ -162,7 +184,7 @@ def process(opcode, sub, line, p1, p2, p3):
   elif opcode == 3:
     ml, ind = linput(sub[1], line, p1, p2, p3)
   elif opcode == 4:
-    ml, ind = loutput(sub[1], line, p1, p2, p3)
+    ml, ind = loutput(sub, line, p1, p2, p3)
   elif opcode == 5:
     ml, ind = jumpiftrue(sub, line, p1, p2, p3)
   elif opcode == 6:
@@ -177,8 +199,11 @@ def main_loop(inputdata, tinput=0):
   index = 0
   lenop, opcode, p1, p2, p3 = get_len_instruct(inputdata[index])
   
+  global test_input
   test_input = tinput
-  return_code = 6546449646469
+  global return_code
+  return_code = 12
+  
   while opcode != 99:
     # lenop, opcode, p1, p2, p3 = get_len_instruct(inputdata[index])
     logging.debug('####')
@@ -202,26 +227,31 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod()
 
+  test_input = 0
+  return_code = 6546449646469
+
   line = reset_mem()
-  index = 0
-  lenop, opcode, p1, p2, p3 = get_len_instruct(line[index])
-  while opcode != 99:
-    # lenop, opcode, p1, p2, p3 = get_len_instruct(line[index])
-    logging.debug('####')
-    logging.debug('index %i',index)
-    logging.debug('line %s', line)
-    logging.debug('####')
-    sub = line[index:index+lenop]
-    logging.debug(sub)
-    line, ind = process(opcode, sub, line, p1, p2, p3)
-    # logging.debug(line[index:index+10])
-    logging.debug('line %s', line)
-    if not ind :
-      index += lenop
-    else :
-      index = ind
-    logging.debug('new index %i',index)
-    lenop, opcode, p1, p2, p3 = get_len_instruct(line[index])
+  main_loop(line)
+  # index = 0
+  # lenop, opcode, p1, p2, p3 = get_len_instruct(line[index])
+  # while opcode != 99:
+  #   # lenop, opcode, p1, p2, p3 = get_len_instruct(line[index])
+  #   logging.debug('####')
+  #   logging.debug('index %i',index)
+  #   logging.debug('line %s', line)
+  #   logging.debug('####')
+  #   sub = line[index:index+lenop]
+  #   logging.debug(sub)
+  #   line, ind = process(opcode, sub, line, p1, p2, p3)
+  #   # logging.debug(line[index:index+10])
+  #   logging.debug('line %s', line)
+  #   if not ind :
+  #     index += lenop
+  #   else :
+  #     index = ind
+  #   logging.debug('new index %i',index)
+  #   lenop, opcode, p1, p2, p3 = get_len_instruct(line[index])
+  logging.info('Diagnostic code : %i', return_code)
   logging.info('End')
 
 
