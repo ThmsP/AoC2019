@@ -31,14 +31,38 @@ def two_same(num):
 		init=i
 	return found
 
+def only_two_same(num):
+	"""
+	>>> only_two_same('123789')
+	False
+	>>> only_two_same('112233')
+	True
+	>>> only_two_same('123444')
+	False
+	>>> only_two_same('111122')
+	True
+	"""
+	match = ['0']
+	found = False
+	for i in num:
+		if i == match[0]:
+			match.append(i)
+		else : 
+			if len(match) == 2 :
+				found = True
+			match = [i]
+	if len(match) == 2 :
+				found = True
+	return found
+
 if __name__ == "__main__":
 	import doctest
 	doctest.testmod()
 
 	pswd_found=[]
 	for pswd in range(range_min, range_max):
-		if never_dec(str(pswd)) and two_same(str(pswd)):
+		if never_dec(str(pswd)) and only_two_same(str(pswd)):
 			pswd_found.append(pswd)
 	
-	# print pswd_found
+	print pswd_found
 	print len(pswd_found)
