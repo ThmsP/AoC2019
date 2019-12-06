@@ -49,7 +49,7 @@ def graph_orbit_map(om):
 def reverse_orbit_graph(og):
   rog = {}
   for p in og.keys():
-    logging.debug('process : %s', p)
+    # logging.debug('process : %s', p)
     orbit_found = True
     to_search = p
     ind_o = []
@@ -58,9 +58,9 @@ def reverse_orbit_graph(og):
         to_search = ind_o[-1]
       for lp in og.keys():
         found = False
-        logging.debug('searching : %s', to_search)
+        # logging.debug('searching : %s', to_search)
         if to_search in og[lp]:
-          logging.debug('found in : %s', lp)
+          # logging.debug('found in : %s', lp)
           ind_o.append(lp)
           found = True
           orbit_found = True
@@ -75,14 +75,22 @@ def count_orbit(revog):
     co += len(revog[p])
   return co
 
+def orbit_mvt(orlis):
+  you = orlis['YOU']
+  san = orlis['SAN']
+  # logging.debug('Orbit list of YOU : %s', you)
+  # logging.debug('Orbit list of SAN : %s', san)
+
+  commun = set(you) ^ set(san)
+  # logging.debug('Orbit commun : %s', commun)
+
+  return len(commun)
 
 def process(om):
   orlis = orbit_graph(om)
-  print orlis
-  # orgra = graph_orbit_map(ormap)
-  # print orgra
-  # revog = reverse_orbit_graph(orgra)
-  # print revog
+  # print orlis
+  # orbit_mvt(orlis)
+
   count = count_orbit(orlis)
   
   return count
@@ -92,8 +100,12 @@ if __name__ == "__main__":
   doctest.testmod()
 
   ormap = load_orbit_map()
-  print ormap
+  # print ormap
 
   c = process(ormap)
   print c
+  orlis = orbit_graph(ormap)
+  com = orbit_mvt(orlis)
+  print com
+
   
