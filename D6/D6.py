@@ -5,8 +5,37 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 def load_orbit_map():
   # Process input :
   with open('input.data','r') as f:
-    om = [s.replace('\n','').split(')') for s in f.readlines()]
+    # Reversin the map : 
+    # list of planet orbiting around planet
+    om = {s.replace('\n','').split(')')[1] : s.replace('\n','').split(')')[0]
+          for s in f.readlines()}
     return om
+
+def get_planet(p, om):
+  try :
+    planet = om[p]
+  except :
+    planet = False
+    pass
+  return planet
+
+
+
+def orbit_graph(om):
+  od = {}
+  for p in om:
+    ol = [om[p]]
+    searching = True
+    while searching :
+      planet = get_planet(ol[-1], om)
+      if planet :
+        ol.append(planet)
+        searching = True
+      else :
+        searching = False
+    od[p] = ol
+  return od
+
 
 def graph_orbit_map(om):
   og = {}
@@ -47,8 +76,16 @@ def count_orbit(revog):
   return co
 
 
-
-
+def process(om):
+  orlis = orbit_graph(om)
+  print orlis
+  # orgra = graph_orbit_map(ormap)
+  # print orgra
+  # revog = reverse_orbit_graph(orgra)
+  # print revog
+  count = count_orbit(orlis)
+  
+  return count
 
 if __name__ == "__main__":
   import doctest
@@ -56,9 +93,7 @@ if __name__ == "__main__":
 
   ormap = load_orbit_map()
   print ormap
-  orgra = graph_orbit_map(ormap)
-  print orgra
-  revog = reverse_orbit_graph(orgra)
-  print revog
-  count = count_orbit(revog)
-  print count
+
+  c = process(ormap)
+  print c
+  
