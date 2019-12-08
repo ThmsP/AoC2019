@@ -109,10 +109,13 @@ class amplifier:
     # else :
     #   line[pos] = tinput
     if self._first_call :
+      logging.info('Loading phase code : %i', self._input_phase)
       line[pos] = self._input_phase
-    else :
-      line[pos] = self._input_value
       self._first_call = False
+    else :
+      logging.info('Loading input code : %i', self._input_value)
+      line[pos] = self._input_value
+      
       
     return line, 0
   
