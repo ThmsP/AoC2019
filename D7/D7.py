@@ -109,10 +109,11 @@ class amplifier:
     # else :
     #   line[pos] = tinput
     if self._first_call :
+      line[pos] = self._input_phase
+    else :
       line[pos] = self._input_value
       self._first_call = False
-    else :
-      line[pos] = self._input_phase
+      
     return line, 0
   
   def loutput(self, sub, line, p1, p2, p3):
@@ -192,7 +193,6 @@ class amplifier:
     index = 0
     line = self.reset_mem()
     lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[index])
-    
 
     while opcode != 99:
       sub = line[index:index+lenop]
@@ -202,6 +202,7 @@ class amplifier:
       else :
         index = ind
       lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[index])
+
     return self._output_code
   
   # def amplify(self):
@@ -215,11 +216,18 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod(extraglobs={'a': amplifier()})
 
-  phase = itertools.permutations([0,1,2,3,4])
+  phase_permut = itertools.permutations([0,1,2,3,4])
   # logging.debug('phase %s',phase)
-  amp = amplifier(5,0)
-  code = amp.amplify()
-  print code
+  thrust = []
+  for phase in phase_permut :
+    logging.debug('phase %s',phase)
+    amp_out = 0 # Input of first amplifier
+    for ind in range(5):
+      amp = amplifier(amp_out,phase[ind])
+      amp_out = amp.amplify()
+    thrust.append(amp_out)
+  # code = amp.amplify()
+  print max(thrust)
   # amp.main_loop()
 
   
