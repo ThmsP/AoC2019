@@ -32,7 +32,7 @@ class amplifier:
       logging.info('Running from previous state')
       l = self._inputdata
     # Increasing memory after
-    l += [0]*4*len(l)
+    l += [0]*10*len(l)
     return l
   
   def get_len_instruct(self, num):
@@ -57,7 +57,7 @@ class amplifier:
         param3 = int(str(num)[-5:-4])
       except :
         pass
-    if opcode == 3 or opcode == 4:
+    if opcode == 3 or opcode == 4 or opcode == 9:
       subl = 2
     elif opcode == 5 or opcode == 6:
       subl = 3
@@ -65,9 +65,11 @@ class amplifier:
     return subl, opcode, param1, param2, param3
   
   def get_value(self, sub, line, p1, p2, p3):
-    logging.debug('line %s', line)
-    logging.debug('sub %s',sub)
-    logging.debug('param %i %i %i', p1, p2, p3)
+    # logging.debug('line %s', line)
+    # logging.debug('len(line) %s', len(line))
+    # logging.debug('sub %s',sub)
+    # logging.debug('param %i %i %i', p1, p2, p3)
+    # logging.debug('self._rel_base %i',self._rel_base)
     params = [p1, p2, p3]
     values = []
     i = 1
@@ -76,7 +78,7 @@ class amplifier:
         if p == 1:
           values.append(sub[i])
         elif p == 2:
-          values.append(line[sub[i]]) + self._rel_base
+          values.append(line[sub[i]+ self._rel_base]) 
       else :
         values.append(line[sub[i]])
       i += 1
@@ -108,11 +110,15 @@ class amplifier:
     >>> a.mul([2,4,4,5],[2,4,4,5,99,0], 0, 0, 0)
     ([2, 4, 4, 5, 99, 9801], 0)
     """
+    # logging.debug('len(line) %s', len(line))
+    # logging.debug('sub %s',sub)
+    # logging.debug('param %i %i %i', p1, p2, p3)
+    # logging.debug('self._rel_base %i',self._rel_base)
     v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
     line[sub[3]] = v1 * v2
     return line, 0
   
-  def linput(self, pos, line, p1, p2, p3):
+  def linput(self, sub, line, p1, p2, p3):
     """
     opcode 3
     """
@@ -120,6 +126,14 @@ class amplifier:
     #   line[pos] = input('Input whatever\n')
     # else :
     #   line[pos] = tinput
+    
+    v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
+    if p1:
+      # print "pp"
+      pos = sub[1]+self._rel_base
+    else:
+      pos = sub[1]
+
     if self._first_call :
       logging.info('Loading phase code : %i', self._input_phase)
       line[pos] = self._input_phase
@@ -138,6 +152,8 @@ class amplifier:
     v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
     logging.info('Diagnostic code : %i', v1)
     self._output_code = v1
+    # if v1 == 203:
+    #   line = None
     # global return_code
     # return_code = v1
     return line, 0
@@ -195,13 +211,13 @@ class amplifier:
 
   
   def process(self, opcode, sub, line, p1, p2, p3):
-    logging.debug('opcode %i ',opcode)
+    logging.debug('opcode p* [%i] : %i %i %i ',opcode, p1, p2, p3)
     if opcode == 1:
       ml, ind = self.add(sub, line, p1, p2, p3)
     elif opcode == 2:
       ml, ind = self.mul(sub, line, p1, p2, p3)
     elif opcode == 3:
-      ml, ind = self.linput(sub[1], line, p1, p2, p3)
+      ml, ind = self.linput(sub, line, p1, p2, p3)
     elif opcode == 4:
       ml, ind = self.loutput(sub, line, p1, p2, p3)
     elif opcode == 5:

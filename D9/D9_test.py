@@ -111,4 +111,12 @@ def test_main_loop_large_bigger():
 
 def test_amplify_relative():
   a = amplifier(0, 9, [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99])
-  assert a.amplify() == [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+  assert a.amplify() == 109
+
+def test_amplify_relative1():
+  a = amplifier(0, 9, [1102,34915192,34915192,7,4,7,99,0])
+  assert len(str(a.amplify())) == 16
+
+def test_amplify_relative2():
+  a = amplifier(0, 9, [104,1125899906842624,99])
+  assert a.amplify() == 1125899906842624
