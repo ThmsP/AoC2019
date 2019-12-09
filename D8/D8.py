@@ -36,38 +36,31 @@ if __name__ == "__main__":
   doctest.testmod()
 
   pix = load_space_image_format()
-  layers = separate_layers(pix, 25, 6)
+  width = 25
+  height = 6
+  layers = separate_layers(pix, width, height)
   chk = check_layers(layers)
 
-  curi = 0
+  img_size = width*height
+
+  pxl_layers = []
+  for px in range(img_size):
+    tmp = []
+    for lay in layers:
+      tmp.append(lay[px])
+    pxl_layers.append(tmp)
+
   image = ''
-  for px in layers[0]:
-    print "#######"
-    print "pix : ", curi
-    if px == '0' or px == '1':
-      print "L1 noir ou blanc"
-      image += px
-      # curi += 1
-      # pass
-    elif px == '2':
-      px_bottom_layers = [ layers[i][curi] for i in range(1,len(layers))]
-      # print px_bottom_layers
-      found_bw = False
-      for dpx in px_bottom_layers :
-        if px == '2':
-          pass
-        elif px == '0' or px == '1':
-          print "L noir ou blanc"
-          image += ' '
-          found_bw = True
-          break
-      if not found_bw :
-        print 'L transparent'
-        image += ' '
-    curi += 1
+  for px in pxl_layers:
+    px_found = False
+    for l in px :
+      if l == '0' or l == '1':
+        image += l
+        break
+    if not px:
+      image += ' '
 
-  # print image
-
+  image = image.replace('0',' ')
   ind = 0
   for i in range(25,25*6+1,25):
     print image[ind:i]
