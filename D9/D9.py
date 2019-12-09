@@ -1,6 +1,6 @@
-#D7
+#D9
 import logging, sys
-import itertools
+# import itertools
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class amplifier:
@@ -12,6 +12,7 @@ class amplifier:
   _first_call  = True
   # Can be used for save the state of the memory
   _inputdata   = {}
+  _rel_base    = 0
 
   def __init__(self, iv=0, ip=0, inputdata={}):
     self._input_value = iv
@@ -30,6 +31,8 @@ class amplifier:
     else :
       logging.info('Running from previous state')
       l = self._inputdata
+    # Increasing memory after
+    l += [0]*4*len(l)
     return l
   
   def get_len_instruct(self, num):
@@ -62,13 +65,18 @@ class amplifier:
     return subl, opcode, param1, param2, param3
   
   def get_value(self, sub, line, p1, p2, p3):
-    
+    logging.debug('line %s', line)
+    logging.debug('sub %s',sub)
+    logging.debug('param %i %i %i', p1, p2, p3)
     params = [p1, p2, p3]
     values = []
     i = 1
     for p in params[:len(sub)-1]:
       if p:
-        values.append(sub[i])
+        if p == 1:
+          values.append(sub[i])
+        elif p == 2:
+          values.append(line[sub[i]]) + self._rel_base
       else :
         values.append(line[sub[i]])
       i += 1
@@ -175,6 +183,16 @@ class amplifier:
     else: 
       line[sub[3]] = 0
     return line, 0
+
+  def base_offset(self, sub, line, p1, p2, p3):
+    """
+    opcode 9 
+    relative base offset
+    """
+    v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
+    self._rel_base += v1
+    return line, 0
+
   
   def process(self, opcode, sub, line, p1, p2, p3):
     logging.debug('opcode %i ',opcode)
@@ -194,6 +212,8 @@ class amplifier:
       ml, ind = self.lessthan(sub, line, p1, p2, p3)
     elif opcode == 8:
       ml, ind = self.equals(sub, line, p1, p2, p3)
+    elif opcode == 9:
+      ml, ind = self.base_offset(sub, line, p1, p2, p3)
     return ml, ind
   
   def amplify(self, inputcode=0, inputphase=0):
@@ -231,31 +251,8 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod(extraglobs={'a': amplifier()})
 
-  # Best phase for part1 is [2,1,0,4,3]
-  # phase_permut = itertools.permutations([0,1,2,3,4])
-  # Now we're searching best phase for part2 :
-  phase_permut = itertools.permutations([5,6,7,8,9])
-
-  # logging.debug('phase %s',phase)
-  amp_list = [amplifier(0,p) for p in [2,1,0,4,3]]
-  amp_out = 0
-  for amp in amp_list:
-    amp_out, line = amp.amplify(amp_out,0)
-
-  thrust = {}
-  for phase in phase_permut :
-    logging.debug('phase %s',phase)
-    # Input of first amplifier
-    # amp_out = 51679 # Best score thrust of part1
-    # for amp in amp_dic:
-      # amp = amplifier(amp_out,phase[ind])
-    amp_out, line = amp.amplify(amp_out, phase[-1])
-    thrust[amp_out]=phase
-  # code = amp.amplify()
-  maxthrust = max(thrust.keys())
-  print maxthrust
-  print thrust[maxthrust]
-  # amp.main_loop()
+  amp = amplifier(0,1)
+  amp.amplify()
 
   
 
