@@ -8,7 +8,9 @@ class amplifier:
   _input_value = 0
   _input_phase = 0
   _output_code = 0
+  # Differenciate the input call for the phase and the one for the value
   _first_call  = True
+  # Can be used for save the state of the memory
   _inputdata   = {}
 
   def __init__(self, iv=0, ip=0, inputdata={}):
@@ -22,9 +24,11 @@ class amplifier:
   def reset_mem(self):
     # Process input :
     if not self._inputdata :
+      logging.info('Running from file input')
       with open('input.data','r') as f:
         l = [int(s) for s in f.readline().split(',')]
     else :
+      logging.info('Running from previous state')
       l = self._inputdata
     return l
   
@@ -192,8 +196,14 @@ class amplifier:
       ml, ind = self.equals(sub, line, p1, p2, p3)
     return ml, ind
   
-  def amplify(self):
+  def amplify(self, inputcode=0, inputphase=0):
     index = 0
+
+    if inputcode:
+      self._input_value=inputcode
+    if inputphase:
+      self._input_phase=inputphase
+
     line = self.reset_mem()
     lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[index])
 
@@ -206,6 +216,8 @@ class amplifier:
         index = ind
       lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[index])
 
+    #Save the state of the amplifier memory
+    self._inputdata = line
     return self._output_code
   
   # def amplify(self):
@@ -219,18 +231,30 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod(extraglobs={'a': amplifier()})
 
-  phase_permut = itertools.permutations([0,1,2,3,4])
+  # Best phase for part1 is [2,1,0,4,3]
+  # phase_permut = itertools.permutations([0,1,2,3,4])
+  # Now we're searching best phase for part2 :
+  phase_permut = itertools.permutations([5,6,7,8,9])
+
   # logging.debug('phase %s',phase)
-  thrust = []
+  amp_list = [amplifier(0,p) for p in [2,1,0,4,3]]
+  amp_out = 0
+  for amp in amp_list:
+    amp_out, line = amp.amplify(amp_out,0)
+
+  thrust = {}
   for phase in phase_permut :
     logging.debug('phase %s',phase)
-    amp_out = 0 # Input of first amplifier
-    for ind in range(5):
-      amp = amplifier(amp_out,phase[ind])
-      amp_out = amp.amplify()
-    thrust.append(amp_out)
+    # Input of first amplifier
+    # amp_out = 51679 # Best score thrust of part1
+    # for amp in amp_dic:
+      # amp = amplifier(amp_out,phase[ind])
+    amp_out, line = amp.amplify(amp_out, phase[-1])
+    thrust[amp_out]=phase
   # code = amp.amplify()
-  print max(thrust)
+  maxthrust = max(thrust.keys())
+  print maxthrust
+  print thrust[maxthrust]
   # amp.main_loop()
 
   

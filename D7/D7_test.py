@@ -72,7 +72,7 @@ def test_main_loop_large_bigger():
 
 ## SEQUENCING TEST
 
-def test_seq1():
+def test_seq_p1_1():
   phase = [4,3,2,1,0]
   out = 0
   for i in phase : 
@@ -81,7 +81,7 @@ def test_seq1():
     del a
   assert out == 43210 
 
-def test_seq2():
+def test_seq_p1_2():
   phase = [0,1,2,3,4]
   out = 0
   for i in phase : 
@@ -90,11 +90,20 @@ def test_seq2():
     del a
   assert out == 54321 
 
-def test_seq3():
-  phase = [1,0,4,3,2]
+def test_seq_p1_3():
+  phase = [9,8,7,6,5]
   out = 0
   for i in phase : 
-    a = amplifier(out, i, [3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0])
+    a = amplifier(out, i, [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5])
     out = a.amplify()
     del a
-  assert out == 65210 
+  assert out == 139629729 
+
+def test_seq_p2_1():
+  phase = [9,7,8,5,6]
+  out = 0
+  for i in phase : 
+    a = amplifier(out, i, [3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10])
+    out = a.amplify()
+    del a
+  assert out == 18216 
