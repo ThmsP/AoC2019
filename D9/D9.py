@@ -97,7 +97,13 @@ class amplifier:
     ([2, 0, 0, 0, 99], 0)
     """
     v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
-    line[sub[3]] = v1 + v2
+    if p3 == 2:
+      # print "pp"
+      pos = sub[3]+self._rel_base
+    else:
+      pos = sub[3]
+
+    line[pos] = v1 + v2
     return line, 0
   
   def mul(self, sub, line, p1, p2, p3):
@@ -115,7 +121,13 @@ class amplifier:
     # logging.debug('param %i %i %i', p1, p2, p3)
     # logging.debug('self._rel_base %i',self._rel_base)
     v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
-    line[sub[3]] = v1 * v2
+    if p3 == 2:
+      # print "pp"
+      pos = sub[3]+self._rel_base
+    else:
+      pos = sub[3]
+      
+    line[pos] = v1 * v2
     return line, 0
   
   def linput(self, sub, line, p1, p2, p3):
@@ -183,10 +195,16 @@ class amplifier:
     opcode 7
     """
     v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
+    if p3 == 2:
+      # print "pp"
+      pos = sub[3]+self._rel_base
+    else:
+      pos = sub[3]
+
     if v1 < v2:
-      line[sub[3]] = 1
+      line[pos] = 1
     else: 
-      line[sub[3]] = 0
+      line[pos] = 0
     return line, 0
   
   def equals(self, sub, line, p1, p2, p3):
@@ -194,10 +212,16 @@ class amplifier:
     opcode 8
     """
     v1, v2, v3 = self.get_value(sub, line, p1, p2, p3)
+    if p3 == 2:
+      # print "pp"
+      pos = sub[3]+self._rel_base
+    else:
+      pos = sub[3]
+
     if v1 == v2:
-      line[sub[3]] = 1
+      line[pos] = 1
     else: 
-      line[sub[3]] = 0
+      line[pos] = 0
     return line, 0
 
   def base_offset(self, sub, line, p1, p2, p3):
