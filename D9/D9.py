@@ -1,7 +1,7 @@
 #D9
 import logging, sys
 # import itertools
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 class amplifier:
 
@@ -126,7 +126,7 @@ class amplifier:
       pos = sub[3]+self._rel_base
     else:
       pos = sub[3]
-      
+
     line[pos] = v1 * v2
     return line, 0
   
@@ -291,7 +291,7 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod(extraglobs={'a': amplifier()})
 
-  amp = amplifier(0,1)
+  amp = amplifier(0,2)
   amp.amplify()
 
   
