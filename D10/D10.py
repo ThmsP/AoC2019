@@ -81,9 +81,7 @@ if __name__ == "__main__":
   doctest.testmod()
 
   ast_map = load_asteroid_map()
-  logging.debug('Asteroids map : %s',ast_map)
-
-  print process(ast_map)
+  # logging.debug('Asteroids map : %s',ast_map)
 
   ast_pos = find_ast_coord(ast_map)
   bst_ast, nbr_ast_view, coef_map = find_best_spot(ast_pos)
@@ -91,6 +89,7 @@ if __name__ == "__main__":
   logging.info('Best asteroid coord : %s',bst_ast)
   logging.info('Asteroids viewed    : %i',nbr_ast_view)  
 
+  print coef_map
   
 
   # for i in ast_pos:
