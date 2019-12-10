@@ -1,5 +1,6 @@
 #D10
 import logging, sys
+import math
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
@@ -76,6 +77,29 @@ def process(ast_map):
   bst_ast, nbr_ast_view, coef_map = find_best_spot(ast_pos)
   return (bst_ast, nbr_ast_view)
 
+def center_offset(ast_pos, center_coord):
+  new_coord = []
+  to_new_coord = {}
+  for ast in ast_pos:
+    new_x = float(ast[0] - center_coord[0])
+    new_y = float(ast[1] - center_coord[1])
+    new_coord.append((new_x, new_y))
+    to_new_coord[(new_x,new_y)] = ast
+  return new_coord, to_new_coord
+
+def cyl_coord(ast_coord):
+  cyl_ast_coord = []
+  cyl_cart = {}
+  for ast in ast_coord:
+    theta = math.atan2(ast[1], ast[0])
+    r = ast[0]/math.cos(theta)
+    cyl_ast_coord.append((r,theta))
+    cyl_cart[ast] = (r,theta)
+
+  return cyl_ast_coord, cyl_cart
+
+
+
 if __name__ == "__main__":
   import doctest
   doctest.testmod()
@@ -89,7 +113,76 @@ if __name__ == "__main__":
   logging.info('Best asteroid coord : %s',bst_ast)
   logging.info('Asteroids viewed    : %i',nbr_ast_view)  
 
-  print coef_map
+  # print coef_map
+
+  new_pos, to_new = center_offset(ast_pos, bst_ast)
+  # print new_pos
+  bst_ast, nbr_ast_view, coef_map = find_best_spot(new_pos)
+  logging.info('Best asteroid coord : %s',bst_ast)
+  logging.info('Asteroids viewed    : %i',nbr_ast_view)  
+
+  new_pos.remove((0,0))
+
+  cyl_coord, cyl_cart = cyl_coord(new_pos)
+  # print cyl_coord
+  # print '###'e
+  # print cyl_cart
+
+  by_theta = {}
+  for cart in cyl_cart:
+    cyl = cyl_cart[cart]
+    by_theta = add_dico((cart, cyl), by_theta, cyl[1])
+
+  # print by_theta
+
+  by_theta_sort = sorted(by_theta)
+  # for i in sorted(by_theta):
+    # print i
+
+  starting_theta = -math.pi/2
+
+  error = 1000000000.
+  start = None
+  for i in by_theta_sort:
+    err = starting_theta - i
+    # print "####"
+    # print i
+    # print err
+    if abs(err) < abs(error):
+      error = err
+      start = i
+
+  # print start
+
+  reconstructlist = by_theta_sort[by_theta_sort.index(start):] + \
+                    by_theta_sort[:by_theta_sort.index(start)]
+
+  print reconstructlist
+
+  vaporized = []
+  ast_on_theta = reconstructlist[:]
+  while ast_on_theta :
+    for theta in ast_on_theta:
+      asts_theta = by_theta[theta]
+      rmin = 1000000000
+      ast_closest = None
+      for ast in asts_theta:
+        if ast[1][0] < rmin:
+          rmin = ast[1][0]
+          ast_closest = ast
+      asts_theta.remove(ast_closest)
+      vaporized.append(to_new[ast_closest[0]])
+      logging.info('Zapping ... %s %s', ast_closest[0], to_new[ast_closest[0]])
+      if not asts_theta :
+        ast_on_theta.remove(theta)
+
+  logging.info('200th asteroid vaporized : %s ', vaporized[199])
+
+
+
+
+
+
   
 
   # for i in ast_pos:
