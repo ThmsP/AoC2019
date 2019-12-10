@@ -18,12 +18,7 @@ def add_dico(val, dic, ind):
     dic[ind] = [val]
   return dic
 
-if __name__ == "__main__":
-  import doctest
-  doctest.testmod()
-
-  ast_map = load_asteroid_map()
-
+def find_ast_coord(ast_map):
   ast_pos = []
   ast_y = {}
   ast_x = {}
@@ -34,22 +29,13 @@ if __name__ == "__main__":
       if ast == "#":
         ast_coord = (x, y)
         ast_pos.append(ast_coord)
-        # ast_y = add_dico(ast_coord, ast_y, y)
-        # ast_x = add_dico(ast_coord, ast_y, y)
-        try :
-          ast_y[y].append(ast_coord)
-        except :
-          ast_y[y] = [ast_coord]
-        try :
-          ast_x[x].append(ast_coord)
-        except :
-          ast_x[x] = [ast_coord]
+        ast_y = add_dico(ast_coord, ast_y, y)
+        ast_x = add_dico(ast_coord, ast_x, x)
       x += 1
     y += 1
-  # print ast_pos
-  # print ast_y
-  # print ast_x
+  return ast_pos
 
+def find_best_spot(ast_pos):
   coef_dir = {}
   for ast in ast_pos:
     cur_ast = ast
@@ -62,46 +48,53 @@ if __name__ == "__main__":
       oth_ast_y = float(other_ast[1])
       if (oth_ast_y-ast_y) == 0. :
         if oth_ast_x-ast_x < 0 :
-          try :
-            coef_dir[cur_ast].append('h1')
-          except :
-            coef_dir[cur_ast] = ['h1']
+          coef_dir = add_dico(('h1',other_ast), coef_dir, cur_ast)
         else :
-          try :
-            coef_dir[cur_ast].append('h2')
-          except :
-            coef_dir[cur_ast] = ['h2']
+          coef_dir = add_dico(('h2',other_ast), coef_dir, cur_ast)
       elif (oth_ast_x-ast_x) == 0. :
         if oth_ast_y-ast_y < 0 :
-          try :
-            coef_dir[cur_ast].append('v1')
-          except :
-            coef_dir[cur_ast] = ['v1']
+          coef_dir = add_dico(('v1',other_ast), coef_dir, cur_ast)
         else :
-          try :
-            coef_dir[cur_ast].append('v2')
-          except :
-            coef_dir[cur_ast] = ['v2']
+          coef_dir = add_dico(('v2',other_ast), coef_dir, cur_ast)
       else:
         coef = (oth_ast_x-ast_x)/(oth_ast_y-ast_y)
         if ast_y > oth_ast_y :
           coef = 'b'+str(coef)
-        try :
-          coef_dir[cur_ast].append(coef)
-        except:
-          coef_dir[cur_ast] = [coef]
+        coef_dir = add_dico((coef,other_ast), coef_dir, cur_ast)
 
-  print coef_dir
+  # print coef_dir
   ast_view = {}
   for ast in coef_dir:
-    # print ast, len(set(coef_dir[ast]))
-    ast_view[ast] = len(set(coef_dir[ast]))
+    coef_val = [i[0] for i in coef_dir[ast]]
+    ast_view[ast] = len(set(coef_val))
 
   best_ast = max(ast_view, key=lambda k: ast_view[k])
-  print best_ast, ast_view[best_ast]
+  return best_ast, ast_view[best_ast], coef_dir
 
-  for i in ast_pos:
-    print ast_view[i]
+def process(ast_map):
+  ast_pos = find_ast_coord(ast_map)
+  bst_ast, nbr_ast_view, coef_map = find_best_spot(ast_pos)
+  return (bst_ast, nbr_ast_view)
+
+if __name__ == "__main__":
+  import doctest
+  doctest.testmod()
+
+  ast_map = load_asteroid_map()
+  logging.debug('Asteroids map : %s',ast_map)
+
+  print process(ast_map)
+
+  ast_pos = find_ast_coord(ast_map)
+  bst_ast, nbr_ast_view, coef_map = find_best_spot(ast_pos)
+
+  logging.info('Best asteroid coord : %s',bst_ast)
+  logging.info('Asteroids viewed    : %i',nbr_ast_view)  
+
+  
+
+  # for i in ast_pos:
+  #   print ast_view[i]
 
 
 
