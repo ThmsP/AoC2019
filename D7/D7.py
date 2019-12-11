@@ -12,12 +12,14 @@ class amplifier:
   _first_call  = True
   # Can be used for save the state of the memory
   _inputdata   = {}
+  _index       = None
 
-  def __init__(self, iv=0, ip=0, inputdata={}):
+  def __init__(self, iv=None, ip=None, inputdata={}):
     self._input_value = iv
     self._input_phase = ip
     self._first_call  = True
     self._inputdata   = inputdata
+    self._index       = 0
     return
 
 
@@ -112,16 +114,21 @@ class amplifier:
     #   line[pos] = input('Input whatever\n')
     # else :
     #   line[pos] = tinput
+    status = 0
     if self._first_call :
       logging.info('Loading phase code : %i', self._input_phase)
       line[pos] = self._input_phase
       self._first_call = False
     else :
-      logging.info('Loading input code : %i', self._input_value)
-      line[pos] = self._input_value
+      if self._input_value != None :
+        logging.info('Loading input code : %i', self._input_value)
+        line[pos] = self._input_value
+        self._input_value = None
+      else :
+        status = 1
       
       
-    return line, 0
+    return line, 0, status
   
   def loutput(self, sub, line, p1, p2, p3):
     """
@@ -178,12 +185,13 @@ class amplifier:
   
   def process(self, opcode, sub, line, p1, p2, p3):
     logging.debug('opcode %i ',opcode)
+    status = 0 #Useful to halt the program
     if opcode == 1:
       ml, ind = self.add(sub, line, p1, p2, p3)
     elif opcode == 2:
       ml, ind = self.mul(sub, line, p1, p2, p3)
     elif opcode == 3:
-      ml, ind = self.linput(sub[1], line, p1, p2, p3)
+      ml, ind, status = self.linput(sub[1], line, p1, p2, p3)
     elif opcode == 4:
       ml, ind = self.loutput(sub, line, p1, p2, p3)
     elif opcode == 5:
@@ -194,31 +202,38 @@ class amplifier:
       ml, ind = self.lessthan(sub, line, p1, p2, p3)
     elif opcode == 8:
       ml, ind = self.equals(sub, line, p1, p2, p3)
-    return ml, ind
+    return ml, ind, status
   
-  def amplify(self, inputcode=0, inputphase=0):
-    index = 0
+  def amplify(self, inputcode=None, inputphase=None):
+    # index = 0
 
-    if inputcode:
+    if inputcode != None:
       self._input_value=inputcode
-    if inputphase:
+    if inputphase != None:
       self._input_phase=inputphase
 
     line = self.reset_mem()
-    lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[index])
+    lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[self._index])
+    # self._output_code = opcode
 
     while opcode != 99:
-      sub = line[index:index+lenop]
-      line, ind = self.process(opcode, sub, line, p1, p2, p3)
+      sub = line[self._index:self._index+lenop]
+      line, ind, status = self.process(opcode, sub, line, p1, p2, p3)
+      if status : 
+        #Save the state of the amplifier memory
+        self._inputdata = line
+        break
+
       if not ind :
-        index += lenop
+        self._index += lenop
       else :
-        index = ind
-      lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[index])
+        self._index = ind
+      lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[self._index])
+
 
     #Save the state of the amplifier memory
-    self._inputdata = line
-    return self._output_code
+    # self._inputdata = line
+    return self._output_code, opcode
   
   # def amplify(self):
   #   line = self.reset_mem()
@@ -235,26 +250,37 @@ if __name__ == "__main__":
   # phase_permut = itertools.permutations([0,1,2,3,4])
   # Now we're searching best phase for part2 :
   phase_permut = itertools.permutations([5,6,7,8,9])
-
-  # logging.debug('phase %s',phase)
-  amp_list = [amplifier(0,p) for p in [2,1,0,4,3]]
-  amp_out = 0
-  for amp in amp_list:
-    amp_out, line = amp.amplify(amp_out,0)
-
   thrust = {}
-  for phase in phase_permut :
-    logging.debug('phase %s',phase)
-    # Input of first amplifier
-    # amp_out = 51679 # Best score thrust of part1
-    # for amp in amp_dic:
-      # amp = amplifier(amp_out,phase[ind])
-    amp_out, line = amp.amplify(amp_out, phase[-1])
-    thrust[amp_out]=phase
-  # code = amp.amplify()
+  for phase_test in phase_permut:
+    # logging.debug('phase %s',phase)
+    amp_list = [amplifier(None,p) for p in phase_test]
+    amp_out = 0
+    opcode = 0
+    first_tour = True
+    while opcode != 99:
+      for amp in amp_list:
+        amp_out, opcode = amp.amplify(amp_out)
+        logging.info('amp_out %i ',amp_out)
+    thrust[amp_out]=phase_test
+    # logging.info('amp_out %i ',amp_out)
   maxthrust = max(thrust.keys())
-  print maxthrust
-  print thrust[maxthrust]
+  print "maxthrust", maxthrust
+  print "thrust[maxthrust]", thrust[maxthrust]
+  print "thrust", thrust
+
+  # thrust = {}
+  # for phase in phase_permut :
+  #   logging.debug('phase %s',phase)
+  #   # Input of first amplifier
+  #   # amp_out = 51679 # Best score thrust of part1
+  #   # for amp in amp_dic:
+  #     # amp = amplifier(amp_out,phase[ind])
+  #   amp_out, line = amp.amplify(amp_out, phase[-1])
+  #   thrust[amp_out]=phase
+  # # code = amp.amplify()
+  # maxthrust = max(thrust.keys())
+  # print maxthrust
+  # print thrust[maxthrust]
   # amp.main_loop()
 
   
