@@ -269,8 +269,8 @@ class robot:
 
   
   def process(self, opcode, sub, line, p1, p2, p3):
-    logging.info('opcode p* [%i] : %i %i %i ',opcode, p1, p2, p3)
-    logging.info('sub %s ',sub)
+    # logging.info('opcode p* [%i] : %i %i %i ',opcode, p1, p2, p3)
+    # logging.info('sub %s ',sub)
     status = 0 #Useful to halt the program
     if opcode == 1:
       ml, ind = self.add(sub, line, p1, p2, p3)
@@ -334,7 +334,7 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod(extraglobs={'a': robot()})
 
-  current_panel_color = {(0,0):0}
+  current_panel_color = {(0,0):1}
   panels_list = [(0,0)]
   paint_code = 0
   rob = robot()
@@ -383,6 +383,18 @@ if __name__ == "__main__":
     panels_list.append(new_coord)
 
   logging.info('Printed panels %i', len(current_panel_color.keys()))
+
+  ordered_pt = {}
+  for pt in current_panel_color:
+    try : 
+      ordered_pt[pt[1]].append(pt)
+    except : 
+      ordered_pt[pt[1]] = [pt]
+
+  for i in sorted(ordered_pt):
+    # print i
+    print [j for j in sorted(ordered_pt[i])]
+      
   
 
 
