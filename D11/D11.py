@@ -1,7 +1,7 @@
 #D11
 import logging, sys
-# import itertools
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+
 
 class robot:
 
@@ -18,6 +18,7 @@ class robot:
   _pointing    = 0
   _input_color = None
 
+
   def __init__(self, ic=0, inputdata={}):
     # self._input_value = iv
     # self._input_phase = ip
@@ -26,8 +27,10 @@ class robot:
     self._index       = 0
     return
 
+
   def get_pointing_dir(self):
     return self._pointing
+
 
   def set_pointing_dir(self,newpointing):
     self._pointing += newpointing
@@ -51,6 +54,7 @@ class robot:
     
     return l
   
+
   def get_len_instruct(self, num):
     l = len(str(num))
     # default : position mode
@@ -80,6 +84,7 @@ class robot:
 
     return subl, opcode, param1, param2, param3
   
+
   def get_value(self, sub, line, p1, p2, p3):
     # logging.debug('line %s', line)
     # logging.debug('len(line) %s', len(line))
@@ -105,6 +110,7 @@ class robot:
   
     return v1, v2, v3
   
+
   def add(self, sub, line, p1, p2, p3):
     """
     opcode 1
@@ -122,6 +128,7 @@ class robot:
     line[pos] = v1 + v2
     return line, 0
   
+
   def mul(self, sub, line, p1, p2, p3):
     """
     opcode 2
@@ -146,6 +153,7 @@ class robot:
     line[pos] = v1 * v2
     return line, 0
   
+
   def linput(self, sub, line, p1, p2, p3):
     """
     opcode 3
@@ -183,6 +191,7 @@ class robot:
       
     return line, 0, status
   
+
   def loutput(self, sub, line, p1, p2, p3):
     """
     opcode 4
@@ -204,6 +213,7 @@ class robot:
     # return_code = v1
     return line, 0
   
+
   def jumpiftrue(self, sub, line, p1, p2, p3):
     """
     opcode 5
@@ -214,6 +224,7 @@ class robot:
       index = v2
     return line, index
   
+
   def jumpiffalse(self, sub, line, p1, p2, p3):
     """
     opcode 6
@@ -224,6 +235,7 @@ class robot:
       index = v2
     return line, index
   
+
   def lessthan(self, sub, line, p1, p2, p3):
     """
     opcode 7
@@ -241,6 +253,7 @@ class robot:
       line[pos] = 0
     return line, 0
   
+
   def equals(self, sub, line, p1, p2, p3):
     """
     opcode 8
@@ -257,6 +270,7 @@ class robot:
     else: 
       line[pos] = 0
     return line, 0
+
 
   def base_offset(self, sub, line, p1, p2, p3):
     """
@@ -292,6 +306,7 @@ class robot:
       ml, ind = self.base_offset(sub, line, p1, p2, p3)
     return ml, ind, status
   
+
   def robotify(self, color_code=0):
     # index = self._index
 
@@ -319,51 +334,38 @@ class robot:
       else :
         self._index = ind
       lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[self._index])
-
     
     return self._output_code, self._output_mvt
-  
-  # def amplify(self):
-  #   line = self.reset_mem()
-  #   self.main_loop(line)
-  #   logging.info('End')
-  #   return
-  
+
   
 if __name__ == "__main__":
   import doctest
   doctest.testmod(extraglobs={'a': robot()})
 
-  current_panel_color = {(0,0):1}
-  panels_list = [(0,0)]
-  paint_code = 0
   rob = robot()
   directions = ['u', 'r', 'd', 'l']
+  # This dict will contains all the panels painted
+  current_panel_color = {(0,0):1}
+  # We are on this panel
+  cur_panel = (0,0)
+  # This code pilote the while
+  paint_code = 0
+  #Robot is pointing this direction
   cur_dir = 'u'
-  # for i in range(6):
   while paint_code != 99:
-
-    cur_panel   = panels_list[-1]
+    # Check if we already pass on this tile
     try : 
       input_color = current_panel_color[cur_panel]
     except : 
       current_panel_color[cur_panel] = 0
-    input_color = current_panel_color[cur_panel]
-    # logging.info('Current_panel %s', cur_panel)
-    # logging.debug('Current color %s', input_color)
-    paint_code, mvt_code = rob.robotify(input_color)
-
+      input_color = current_panel_color[cur_panel]
     
-    # logging.debug('New color %i', paint_code)
-
+    paint_code, mvt_code = rob.robotify(input_color)
+    # Update the current panel color
     current_panel_color[cur_panel] = paint_code
 
-    # logging.debug('Panel list %s', current_panel_color)
-    # logging.debug('mvt_code %s', mvt_code)
-
+    # Get the new direction
     index = directions.index(cur_dir)
-
-    # logging.debug('index %i', index)
     if mvt_code == 0:
       cur_dir = directions[index-1]
     else :
@@ -371,7 +373,7 @@ if __name__ == "__main__":
         index = index - 4
       cur_dir = directions[index+1]
 
-    # pointing = rob.get_pointing_dir()
+    # Calculate the coord of the next tile
     if cur_dir == "l":
       new_coord = (cur_panel[0]-1, cur_panel[1])
     elif cur_dir == "d":
@@ -380,10 +382,11 @@ if __name__ == "__main__":
       new_coord = (cur_panel[0]+1, cur_panel[1])
     elif cur_dir == "u":
       new_coord = (cur_panel[0], cur_panel[1]+1)
-    panels_list.append(new_coord)
+    cur_panel = new_coord
 
   logging.info('Printed panels %i', len(current_panel_color.keys()))
 
+  # Filter the current_panel_color by index of line
   ordered_pt = {}
   for pt in current_panel_color:
     try : 
@@ -391,9 +394,10 @@ if __name__ == "__main__":
     except : 
       ordered_pt[pt[1]] = [pt]
 
-  for i in sorted(ordered_pt):
-    # print i
-    print [j for j in sorted(ordered_pt[i])]
+  # Print the letters
+  for i in sorted(ordered_pt, reverse=True):
+    # Need a little tuning too clearly see the letters
+    print str([current_panel_color[j] for j in sorted(ordered_pt[i])]).replace('0',' ').replace(',','').replace('[','').replace(']','')
       
   
 
