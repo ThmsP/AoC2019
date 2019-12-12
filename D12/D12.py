@@ -61,6 +61,32 @@ def iterations(moons, ite=0):
 
   return moons
 
+def potential_energy(m):
+  ep = 0
+  for i in range(3):
+    ep += abs(m[0][i])
+  logging.info('moon %s',m)
+  logging.info('ep %i', ep)
+  return ep
+
+def kinetic_energy(m):
+  ek = 0
+  for i in range(3):
+    ek += abs(m[1][i])
+  logging.info('moon %s',m)
+  logging.info('ek %i', ek)
+  return ek
+
+def total_energy(moons):
+  et = 0
+  for m in moons:
+    ep = potential_energy(moons[m])
+    ek = kinetic_energy(moons[m])
+    et += ep*ek
+  return et
+
+
+
 
 
 
@@ -68,7 +94,9 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod()
 
-  moons = iterations(load_moon_map(), 10)  
+  moons = iterations(load_moon_map(), 1000)  
+  system_energy = total_energy(moons)
+  logging.info('total energy of the system : %i', system_energy)
 
 
 
