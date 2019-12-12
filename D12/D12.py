@@ -45,19 +45,40 @@ def apply_velocity(m):
     m[0][ind] = m[0][ind] + m[1][ind]
   return m
 
+def mem_pos(moons):
+  hist = ''
+  # print moons
+  for m in moons:
+    for c in moons[m]:
+      for cc in c:
+        # print cc
+        hist+=str(cc)
+  # print hist
+  return hist
+
 
 def iterations(moons, ite=0):
   moons_couple = [i for i in itertools.permutations(moons,2)]
-  print moons_couple
+  # print moons_couple
 
-  for i in range(ite):
-    logging.info('ieration %i ', i)
+  moons_pos = mem_pos(moons)
+  ite =1
+  while True:
+    logging.info('ieration %i ', ite)
     # for m in moons:
       # logging.info("moon %s %s",m, moons[m])
     for mc in moons_couple:
       moons[mc[0]] = apply_gravity(moons[mc[0]], moons[mc[1]])
     for m in moons:
       moons[m] = apply_velocity(moons[m])
+    pos = mem_pos(moons)
+    # print pos
+    if pos in moons_pos:
+      logging.info('Universe repeat ! %i', ite)
+      break
+    else:
+      moons_pos+=pos
+    ite += 1
 
   return moons
 
@@ -95,8 +116,8 @@ if __name__ == "__main__":
   doctest.testmod()
 
   moons = iterations(load_moon_map(), 1000)  
-  system_energy = total_energy(moons)
-  logging.info('total energy of the system : %i', system_energy)
+  # system_energy = total_energy(moons)
+  # logging.info('total energy of the system : %i', system_energy)
 
 
 
