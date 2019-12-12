@@ -29,27 +29,38 @@ def add_dico(val, dic, ind):
     dic[ind] = [val]
   return dic
 
-def calculate_gravity(m1, m2):
-  # velocity_m1 = m1[1]
-  #
-  print m1[1]
-  # vx, vy, vz = m1[1]
-
-  # vel = [vx,vy,vz]
-  # velout = []
+def apply_gravity(m1, m2):
   for ind in range(3):
     if m1[0][ind] < m2[0][ind]:
-      v = -1
-    elif m1[0][ind] > m2[0][ind]:
       v = 1
+    elif m1[0][ind] > m2[0][ind]:
+      v = -1
     else:
       v = 0
-    print m1[0]
-    print m1[1]
-    print v
     m1[1][ind] += v
-  # m1[1]=velout
   return m1
+
+def apply_velocity(m):
+  for ind in range(3):
+    m[0][ind] = m[0][ind] + m[1][ind]
+  return m
+
+
+def iterations(moons, ite=0):
+  moons_couple = [i for i in itertools.permutations(moons,2)]
+  print moons_couple
+
+  for i in range(ite):
+    logging.info('ieration %i ', i)
+    # for m in moons:
+      # logging.info("moon %s %s",m, moons[m])
+    for mc in moons_couple:
+      moons[mc[0]] = apply_gravity(moons[mc[0]], moons[mc[1]])
+    for m in moons:
+      moons[m] = apply_velocity(moons[m])
+
+  return moons
+
 
 
 
@@ -57,21 +68,7 @@ if __name__ == "__main__":
   import doctest
   doctest.testmod()
 
-  moons = load_moon_map()
-  # print moon_map
-  moons_couple = itertools.permutations(moons,2)
-    # print i
-  for i in moons_couple:
-    cur_moon = i[0]
-    cpl_moon = i[1]
-    print moons
-    print cur_moon
-    moons[cur_moon] = calculate_gravity(moons[cur_moon], moons[cpl_moon])
-
-  for m in moons:
-    print moons[m]
-    for c in moons[m]:
-      print c
+  moons = iterations(load_moon_map(), 10)  
 
 
 
