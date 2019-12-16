@@ -2,6 +2,12 @@
 import logging, sys
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
+class term_colors:
+    WALL = '\x1b[0;31;41m'
+    BLOCK = '\x1b[0;32;42m'
+    BALL = '\x1b[0;33;43m'
+    PLATE = '\x1b[0;35;45m'
+    ENDC = '\x1b[0m'
 
 class arcade:
 
@@ -309,12 +315,14 @@ class arcade:
   def run_game(self, color_code=0):
     # index = self._index
 
-    # self._input_color=color_code
+    self._input_color=color_code
     # self._first_call = True
     # if inputphase:
       # self._input_phase=inputphase
 
     line = self.reset_mem()
+    #Play for free !
+    line[0] = 2
     lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[self._index])
 
     logging.debug('opcode %s ',opcode)
@@ -338,7 +346,7 @@ class arcade:
         self._total_output.append(self._output_code)
         self._output_code = []
     
-    return self._output_code #, self._output_mvt
+    return opcode #, self._output_mvt
   
 
   
@@ -347,22 +355,52 @@ if __name__ == "__main__":
   doctest.testmod(extraglobs={'a': arcade()})
 
   borne = arcade()
-  borne.run_game()
-  tiles = { (i[0],i[1]):i[2] for i in borne._total_output}
-  logging.info('D13 BLOCK TILES : %i',len({ (i[0],i[1]):i[2] for i in borne._total_output if i[2] == 2}.keys()))
-  imax, jmax = max(tiles.keys())
-  for j in range(jmax):
-    line = ''
-    for i in range(imax):
-      if tiles[i,j] == 0:
-        ti = ' '
-      elif tiles[i,j] == 1:
-        ti = '#'
-      elif tiles[i,j] == 2:
-        ti = 'B'
-      elif tiles[i,j] == 3:
-        ti = '_'
-      elif tiles[i,j] == 4:
-        ti = '*'
-      line += ti
-    print line
+
+  joystick = 0
+  opcode = 0
+  score = 0
+  nbr_block = 1
+  tiles_memory = {'_':(0,0), '*':(1,1)}
+  while opcode != 99:
+    borne.run_game(joystick)
+    tiles = { (i[0],i[1]):i[2] for i in borne._total_output}
+    nbr_block = len({ (i[0],i[1]):i[2] for i in borne._total_output if i[2] == 2}.keys())
+    # logging.info('D13 BLOCK TILES : %i',len({ (i[0],i[1]):i[2] for i in borne._total_output if i[2] == 2}.keys()))
+    imax, jmax = max(tiles.keys())
+    try:
+      score = tiles[(-1,0)]
+    except:
+      pass
+
+    for j in range(jmax):
+      tiles_current = {'_':None, '*':(1,1)}
+      line = ''
+      for i in range(imax):
+        if tiles[i,j] == 0:
+          ti = ' '
+        elif tiles[i,j] == 1:
+          ti = term_colors.WALL+'#'+term_colors.ENDC
+        elif tiles[i,j] == 2:
+          ti = term_colors.BLOCK+'B'+term_colors.ENDC
+        elif tiles[i,j] == 3:
+          ti = term_colors.PLATE+'_'+term_colors.ENDC
+          tiles_current['_'] = (i,j)
+        elif tiles[i,j] == 4:
+          ti = term_colors.BALL+'*'+term_colors.ENDC
+          tiles_current['*'] = (i,j)
+        line += ti
+      # if tiles_current['_'] == tiles_current['*']:
+      #   til
+      print line
+    print score
+    joy_in = raw_input()
+    if joy_in == "q":
+      joystick = -1
+    elif joy_in == "d":
+      joystick = 1
+    else :
+      joystick = 0
+  if nbr_block == 0 :
+    print "WINNER, score : %i"%score
+  else :
+    print "LOSER,  score : %i"%score
