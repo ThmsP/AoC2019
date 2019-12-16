@@ -184,7 +184,7 @@ class amplifier:
     return line, 0
   
   def process(self, opcode, sub, line, p1, p2, p3):
-    logging.debug('opcode %i ',opcode)
+    
     status = 0 #Useful to halt the program
     if opcode == 1:
       ml, ind = self.add(sub, line, p1, p2, p3)
@@ -215,7 +215,7 @@ class amplifier:
     line = self.reset_mem()
     lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[self._index])
     # self._output_code = opcode
-
+    logging.debug('opcode %i ',opcode)
     while opcode != 99:
       sub = line[self._index:self._index+lenop]
       line, ind, status = self.process(opcode, sub, line, p1, p2, p3)
@@ -229,6 +229,7 @@ class amplifier:
       else :
         self._index = ind
       lenop, opcode, p1, p2, p3 = self.get_len_instruct(line[self._index])
+      logging.debug('opcode %i ',opcode)
 
 
     #Save the state of the amplifier memory
