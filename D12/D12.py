@@ -83,7 +83,7 @@ def thousand_it(ind):
 
 def thousand_period(args):
   start, period = args
-  return [i for i in xrange(start, start*100, period)]
+  return [i for i in xrange(start, start*5, period)]
 
 # def potential_energy(m):
 #   ep = 0
@@ -128,27 +128,35 @@ if __name__ == "__main__":
   tt_res = [[],[],[]]
   results = []
   start = period
+  # print period
   while not found :
-    pool = multiprocessing.Pool(2)
-    for x in pool.imap_unordered(thousand_period, [(start[i], period[i]) for i in xrange(3)]):
+    pool = multiprocessing.Pool(3)
+    for x in pool.map(thousand_period, [(start[i], period[i]) for i in xrange(3)]):
       results.append(x)
       pass
+    # print results
     pool.close()
     pool.join()
     for i in xrange(3):
-      tt_res[i] += results[i]
+      for j in results[i]:
+        # for k in period:        
+        if j % period[0] or j%period[1] or j%period[2]:
+          # print "rest found %i %i"%(j,k)
+          pass
+        tt_res[i].append(j)
+    start = [i[-1] for i in results]
     results = []
-    #print results
+    # print tt_res
     min_ite_per_axis = set(tt_res[0]) & set(tt_res[1]) & set(tt_res[2])
     # print min_ite_per_axis
     if min_ite_per_axis : 
       print 'FOUND %i'%min(min_ite_per_axis)
       break
-    else :
-      start = [i[-1] for i in tt_res]
+    # else :
+    #   start = [i[-1] for i in tt_res]
       # for i in xrange(3):
         # tt_res[i] = tt_res[i][-1000:]
-      print start
+    print start
 
       # print results
       # pass
