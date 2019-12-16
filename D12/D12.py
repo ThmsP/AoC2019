@@ -54,7 +54,7 @@ def mem_pos(ms, ind):
 
 
 #pythran export iterations(((int, int, int) list,(int, int, int) list) list : str dict, int)
-def iterations(ind):
+def iterations(ind, bcl=1):
 
   moons = load_moon_map()
   moons_couple = [i for i in itertools.combinations(moons,2)]
@@ -62,7 +62,8 @@ def iterations(ind):
 
   moons_pos = mem_pos(moons, ind)
   found = []
-  while len(found)<2000:
+  ite = 1
+  while len(found)<bcl:
 
     for mc in moons_couple:
       moons[mc[0]], moons[mc[1]] = apply_gravity(moons[mc[0]], moons[mc[1]], ind)
@@ -71,13 +72,22 @@ def iterations(ind):
     if pos in moons_pos:
       found.append(ite)
       print len(found)
-
-
+    ite += 1
   return found
+
+def one_it(ind):
+  return iterations(ind)
+
+def thousand_it(ind):
+  return iterations(ind,1000)
+
+def thousand_period(args):
+  start, period = args
+  return [i for i in xrange(start, start*100, period)]
 
 # def potential_energy(m):
 #   ep = 0
-#   for i in range(3):
+#   for i in xrange(3):
 #     ep += abs(m[0][i])
 #   logging.info('moon %s',m)
 #   logging.info('ep %i', ep)
@@ -85,7 +95,7 @@ def iterations(ind):
 
 # def kinetic_energy(m):
 #   ek = 0
-#   for i in range(3):
+#   for i in xrange(3):
 #     ek += abs(m[1][i])
 #   logging.info('moon %s',m)
 #   logging.info('ek %i', ek)
@@ -105,16 +115,47 @@ def iterations(ind):
 
 # 
 if __name__ == "__main__":
-  pool = multiprocessing.Pool(8)
+  pool = multiprocessing.Pool(3)
   results = []
-  for x in pool.imap_unordered(iterations, range(3)):
-    results.append(x)
-    pass
+  found = None
+  bcl = 1
+  for x in pool.imap_unordered(one_it, xrange(3)):
+      results.append(x)
   pool.close()
   pool.join()
-  min_ite_per_axis = set(results[0]) & set(results[1]) & set(results[2])
-  min_ite          = min(min_ite_per_axis)
-  print "FINAL FOUND : %i"%min_ite
+  period = [i[0] for i in results]
+  #print period
+  tt_res = [[],[],[]]
+  results = []
+  start = period
+  while not found :
+    pool = multiprocessing.Pool(2)
+    for x in pool.imap_unordered(thousand_period, [(start[i], period[i]) for i in xrange(3)]):
+      results.append(x)
+      pass
+    pool.close()
+    pool.join()
+    for i in xrange(3):
+      tt_res[i] += results[i]
+    results = []
+    #print results
+    min_ite_per_axis = set(tt_res[0]) & set(tt_res[1]) & set(tt_res[2])
+    # print min_ite_per_axis
+    if min_ite_per_axis : 
+      print 'FOUND %i'%min(min_ite_per_axis)
+      break
+    else :
+      start = [i[-1] for i in tt_res]
+      # for i in xrange(3):
+        # tt_res[i] = tt_res[i][-1000:]
+      print start
+
+      # print results
+      # pass
+    
+    # min_ite_per_axis = set(results[0]) & set(results[1]) & set(results[2])
+    # min_ite          = min(min_ite_per_axis)
+  # print "FINAL FOUND : %i"%min_ite
 
 
   
