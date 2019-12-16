@@ -1,6 +1,7 @@
 #D11
 import logging, sys
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+import os
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 
 class term_colors:
     WALL = '\x1b[0;31;41m'
@@ -371,7 +372,7 @@ if __name__ == "__main__":
       score = tiles[(-1,0)]
     except:
       pass
-
+    os.system('clear')
     for j in range(jmax):
       tiles_current = {'_':None, '*':(1,1)}
       line = ''
